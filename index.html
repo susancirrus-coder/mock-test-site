@@ -1,196 +1,232 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Mock Test — Demo</title>
-<style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
-  body{max-width:880px;margin:32px auto;padding:20px;background:#f7f8fb;border-radius:10px;}
-  h1{margin:0 0 8px;}
-  .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 6px 18px rgba(20,20,40,0.06);}
-  .question{font-size:1.1rem;margin-bottom:12px;}
-  .choices{list-style:none;padding:0;margin:0;}
-  .choices li{margin:8px 0;}
-  button{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;}
-  .primary{background:#111;color:#fff;border:none;}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-  .timer{font-weight:700;}
-  .hidden{display:none;}
-  footer{margin-top:16px;font-size:0.9rem;color:#555;}
-  .small{font-size:0.9rem;color:#666}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reading: Fill in the Blanks Mock Test</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f3f5f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .passage {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+    select {
+      padding: 4px;
+      border-radius: 5px;
+      margin: 0 3px;
+    }
+    button {
+      margin-top: 25px;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 10px;
+      background-color: #4caf50;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #3e8e41;
+    }
+    .result {
+      margin-top: 25px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .correct {
+      border: 2px solid #4caf50;
+      background: #e8f5e9;
+    }
+    .incorrect {
+      border: 2px solid #f44336;
+      background: #ffebee;
+    }
+    .correct-answer {
+      color: #2e7d32;
+      font-style: italic;
+      font-size: 0.95rem;
+      margin-left: 4px;
+    }
+  </style>
 </head>
 <body>
-  <div class="card">
-    <div class="topbar">
-      <div>
-        <h1>Mock Test</h1>
-        <div class="small">Try this demo quiz — edit questions in the JS to customize.</div>
-      </div>
-      <div class="timer" id="timer">Time: 00:00</div>
-    </div>
-
-    <div id="quizArea">
-      <div id="qnum" class="small">Question 1</div>
-      <div id="question" class="question">Loading...</div>
-      <ul id="choices" class="choices"></ul>
-
-      <div style="margin-top:12px;">
-        <button id="nextBtn" class="primary">Next</button>
-        <button id="skipBtn">Skip</button>
-      </div>
-    </div>
-
-    <div id="resultArea" class="hidden">
-      <h2>Results</h2>
-      <p id="scoreText"></p>
-      <button id="retryBtn">Retry</button>
-      <button id="downloadBtn">Download results (CSV)</button>
-    </div>
-
-    <footer>
-      <div class="small">Results are saved to your browser storage (localStorage). Use Download to export.</div>
-    </footer>
+  <div class="container">
+    <h1>Reading: Fill in the Blanks</h1>
+    <div id="test-container"></div>
+    <button id="submitBtn">Submit</button>
+    <div id="result" class="result"></div>
   </div>
 
-<script>
-/* ========= EDIT QUESTIONS HERE =========
-Each item: {q: 'Question text', choices: ['a','b','c','d'], answer: 1}  (answer is zero-based index)
-You can load questions from a JSON file or API for more advanced setups.
-======================================== */
-const QUESTIONS = [
-  { q: "Which tag defines a hyperlink in HTML?", choices: ["<link>", "<a>", "<href>", "<url>"], answer: 1 },
-  { q: "What's the correct HTML element for the largest heading?", choices: ["<h6>", "<head>", "<h1>", "<heading>"], answer: 2 },
-  { q: "Which attribute adds inline CSS style to an element?", choices: ["class", "id", "style", "css"], answer: 2 },
-  { q: "Which JavaScript method writes a message to the console?", choices: ["console.log()", "print()", "echo()", "log.write()"], answer: 0 }
-];
+  <script>
+    const TESTS = [
+      {
+        passage: `The Internet has revolutionized communication, making it easier to 
+        <select><option value="">--select--</option><option value="connect">connect</option><option value="disconnect">disconnect</option><option value="ignore">ignore</option></select>
+        with people across the globe. It has also transformed the way we 
+        <select><option value="">--select--</option><option value="consume">consume</option><option value="store">store</option><option value="print">print</option></select>
+        information and entertainment. However, excessive use can lead to 
+        <select><option value="">--select--</option><option value="addiction">addiction</option><option value="improvement">improvement</option><option value="discipline">discipline</option></select>.`,
+        answers: ["connect", "consume", "addiction"]
+      },
+      {
+        passage: `Photosynthesis is the process by which green plants 
+        <select><option value="">--select--</option><option value="produce">produce</option><option value="absorb">absorb</option><option value="destroy">destroy</option></select>
+        food using sunlight. The energy from the sun is captured by 
+        <select><option value="">--select--</option><option value="chlorophyll">chlorophyll</option><option value="carbon">carbon</option><option value="oxygen">oxygen</option></select>
+        in the leaves. This process also releases 
+        <select><option value="">--select--</option><option value="oxygen">oxygen</option><option value="carbon dioxide">carbon dioxide</option><option value="nitrogen">nitrogen</option></select>
+        into the atmosphere.`,
+        answers: ["produce", "chlorophyll", "oxygen"]
+      },
+      {
+        passage: `Global warming is primarily caused by the buildup of 
+        <select><option value="">--select--</option><option value="greenhouse gases">greenhouse gases</option><option value="oxygen">oxygen</option><option value="hydrogen">hydrogen</option></select>
+        in the atmosphere. These gases trap heat and cause the Earth’s temperature to 
+        <select><option value="">--select--</option><option value="rise">rise</option><option value="drop">drop</option><option value="stabilize">stabilize</option></select>. Scientists urge countries to reduce 
+        <select><option value="">--select--</option><option value="carbon emissions">carbon emissions</option><option value="rainfall">rainfall</option><option value="soil">soil</option></select>
+        to combat the problem.`,
+        answers: ["greenhouse gases", "rise", "carbon emissions"]
+      },
+      {
+        passage: `In the workplace, teamwork plays a vital role in 
+        <select><option value="">--select--</option><option value="achieving">achieving</option><option value="delaying">delaying</option><option value="hindering">hindering</option></select>
+        organizational goals. Employees who collaborate effectively can 
+        <select><option value="">--select--</option><option value="solve">solve</option><option value="ignore">ignore</option><option value="create">create</option></select>
+        complex problems faster. Good communication also helps to 
+        <select><option value="">--select--</option><option value="avoid">avoid</option><option value="increase">increase</option><option value="promote">promote</option></select>
+        misunderstandings.`,
+        answers: ["achieving", "solve", "avoid"]
+      },
+      {
+        passage: `Water scarcity is becoming a global concern as the demand for fresh water 
+        <select><option value="">--select--</option><option value="increases">increases</option><option value="declines">declines</option><option value="stops">stops</option></select>.
+        Factors such as population growth and 
+        <select><option value="">--select--</option><option value="climate change">climate change</option><option value="soil erosion">soil erosion</option><option value="flooding">flooding</option></select>
+        worsen the problem. Conservation efforts are essential to 
+        <select><option value="">--select--</option><option value="preserve">preserve</option><option value="pollute">pollute</option><option value="waste">waste</option></select>
+        water resources.`,
+        answers: ["increases", "climate change", "preserve"]
+      },
+      {
+        passage: `Artificial Intelligence (AI) is transforming industries by automating
+        <select><option value="">--select--</option><option value="repetitive">repetitive</option><option value="creative">creative</option><option value="manual">manual</option></select>
+        tasks. It allows machines to learn and 
+        <select><option value="">--select--</option><option value="adapt">adapt</option><option value="ignore">ignore</option><option value="resist">resist</option></select>
+        from data, improving performance over time. However, ethical issues about job 
+        <select><option value="">--select--</option><option value="loss">loss</option><option value="creation">creation</option><option value="satisfaction">satisfaction</option></select>
+        remain a concern.`,
+        answers: ["repetitive", "adapt", "loss"]
+      },
+      {
+        passage: `Reading is a fundamental skill that helps individuals 
+        <select><option value="">--select--</option><option value="expand">expand</option><option value="reduce">reduce</option><option value="limit">limit</option></select>
+        their knowledge and imagination. People who read regularly tend to 
+        <select><option value="">--select--</option><option value="develop">develop</option><option value="lose">lose</option><option value="forget">forget</option></select>
+        better language skills. It also improves concentration and 
+        <select><option value="">--select--</option><option value="focus">focus</option><option value="distraction">distraction</option><option value="confusion">confusion</option></select>.`,
+        answers: ["expand", "develop", "focus"]
+      },
+      {
+        passage: `Exercise is important for maintaining a healthy 
+        <select><option value="">--select--</option><option value="body">body</option><option value="mind">mind</option><option value="environment">environment</option></select>.
+        Regular physical activity helps to 
+        <select><option value="">--select--</option><option value="strengthen">strengthen</option><option value="weaken">weaken</option><option value="decrease">decrease</option></select>
+        muscles and improve cardiovascular health. It can also reduce the risk of 
+        <select><option value="">--select--</option><option value="disease">disease</option><option value="happiness">happiness</option><option value="sleep">sleep</option></select>.`,
+        answers: ["body", "strengthen", "disease"]
+      },
+      {
+        passage: `Education empowers individuals to 
+        <select><option value="">--select--</option><option value="improve">improve</option><option value="reduce">reduce</option><option value="hide">hide</option></select>
+        their lives. Access to quality education promotes 
+        <select><option value="">--select--</option><option value="equality">equality</option><option value="division">division</option><option value="competition">competition</option></select>
+        and helps reduce 
+        <select><option value="">--select--</option><option value="poverty">poverty</option><option value="wealth">wealth</option><option value="conflict">conflict</option></select>.`,
+        answers: ["improve", "equality", "poverty"]
+      },
+      {
+        passage: `The invention of the printing press made it possible to 
+        <select><option value="">--select--</option><option value="mass-produce">mass-produce</option><option value="destroy">destroy</option><option value="limit">limit</option></select>
+        books, allowing knowledge to spread more 
+        <select><option value="">--select--</option><option value="widely">widely</option><option value="secretly">secretly</option><option value="slowly">slowly</option></select>.
+        This innovation greatly contributed to the 
+        <select><option value="">--select--</option><option value="Renaissance">Renaissance</option><option value="Revolution">Revolution</option><option value="Dark Ages">Dark Ages</option></select>.`,
+        answers: ["mass-produce", "widely", "Renaissance"]
+      }
+    ];
 
-let index = 0;
-let score = 0;
-let answers = []; // {qIndex, selected, correct}
-let timeLeft = QUESTIONS.length * 60; // example: 60 seconds per question
-let timerInterval;
-
-const qnumEl = document.getElementById('qnum');
-const questionEl = document.getElementById('question');
-const choicesEl = document.getElementById('choices');
-const nextBtn = document.getElementById('nextBtn');
-const skipBtn = document.getElementById('skipBtn');
-const timerEl = document.getElementById('timer');
-const resultArea = document.getElementById('resultArea');
-const quizArea = document.getElementById('quizArea');
-const scoreText = document.getElementById('scoreText');
-const retryBtn = document.getElementById('retryBtn');
-const downloadBtn = document.getElementById('downloadBtn');
-
-function startTimer(){
-  updateTimerDisplay();
-  timerInterval = setInterval(()=>{
-    timeLeft--;
-    if(timeLeft <= 0){
-      clearInterval(timerInterval);
-      finishQuiz();
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
     }
-    updateTimerDisplay();
-  }, 1000);
-}
 
-function updateTimerDisplay(){
-  const mm = String(Math.floor(timeLeft/60)).padStart(2,'0');
-  const ss = String(timeLeft%60).padStart(2,'0');
-  timerEl.textContent = `Time: ${mm}:${ss}`;
-}
+    function loadTestSet() {
+      const selectedTests = shuffle([...TESTS]).slice(0, 10);
+      const container = document.getElementById("test-container");
+      container.innerHTML = "";
+      selectedTests.forEach((test, index) => {
+        const div = document.createElement("div");
+        div.className = "passage";
+        div.innerHTML = `<strong>Passage ${index + 1}</strong><br><br>${test.passage}`;
+        container.appendChild(div);
+      });
+      document.getElementById("submitBtn").textContent = "Submit";
+      document.getElementById("result").textContent = "";
+      document.getElementById("submitBtn").onclick = () => checkAnswers(selectedTests);
+    }
 
-function showQuestion(i){
-  const item = QUESTIONS[i];
-  qnumEl.textContent = `Question ${i+1} of ${QUESTIONS.length}`;
-  questionEl.innerHTML = item.q;
-  choicesEl.innerHTML = '';
-  item.choices.forEach((c, idx) => {
-    const li = document.createElement('li');
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.innerHTML = `${String.fromCharCode(65+idx)}. ${c}`;
-    btn.dataset.index = idx;
-    btn.onclick = () => selectAnswer(idx, btn);
-    li.appendChild(btn);
-    choicesEl.appendChild(li);
-  });
-}
+    function checkAnswers(selectedTests) {
+      const selects = document.querySelectorAll("select");
+      let answerIndex = 0;
+      let totalCorrect = 0;
+      selectedTests.forEach(test => {
+        test.answers.forEach(ans => {
+          const sel = selects[answerIndex];
+          if (sel.value === ans) {
+            sel.classList.add("correct");
+            totalCorrect++;
+          } else {
+            sel.classList.add("incorrect");
+            const correctText = document.createElement("span");
+            correctText.className = "correct-answer";
+            correctText.textContent = `(Correct: ${ans})`;
+            sel.after(correctText);
+          }
+          sel.disabled = true;
+          answerIndex++;
+        });
+      });
+      document.getElementById("result").textContent =
+        `You got ${totalCorrect} out of ${selectedTests.reduce((a, b) => a + b.answers.length, 0)} correct.`;
+      document.getElementById("submitBtn").textContent = "Try Another Set";
+      document.getElementById("submitBtn").onclick = () => loadTestSet();
+    }
 
-function selectAnswer(choiceIdx, btn){
-  // highlight selected
-  Array.from(choicesEl.querySelectorAll('button')).forEach(b=>b.style.outline='none');
-  btn.style.outline = '2px solid #1a73e8';
-  btn.dataset.selected = '1';
-  // store selection but don't advance until Next clicked
-  answers[index] = { qIndex: index, selected: choiceIdx, correct: QUESTIONS[index].answer };
-}
-
-nextBtn.addEventListener('click', ()=>{
-  // if nothing selected, treat as skipped (null)
-  if(!answers[index]) answers[index] = { qIndex: index, selected: null, correct: QUESTIONS[index].answer };
-  const sel = answers[index].selected;
-  if(sel !== null && sel !== undefined && sel === QUESTIONS[index].answer){
-    score++;
-  }
-  index++;
-  if(index >= QUESTIONS.length) finishQuiz();
-  else showQuestion(index);
-});
-
-skipBtn.addEventListener('click', ()=>{
-  answers[index] = { qIndex: index, selected: null, correct: QUESTIONS[index].answer };
-  index++;
-  if(index >= QUESTIONS.length) finishQuiz();
-  else showQuestion(index);
-});
-
-function finishQuiz(){
-  clearInterval(timerInterval);
-  quizArea.classList.add('hidden');
-  resultArea.classList.remove('hidden');
-  const percent = Math.round((score / QUESTIONS.length) * 100);
-  scoreText.textContent = `Score: ${score} / ${QUESTIONS.length} (${percent}%)`;
-  // Save results to localStorage with timestamp
-  const history = JSON.parse(localStorage.getItem('mocktest_history') || '[]');
-  history.push({
-    date: new Date().toISOString(),
-    score,
-    total: QUESTIONS.length,
-    percent,
-    answers
-  });
-  localStorage.setItem('mocktest_history', JSON.stringify(history, null, 2));
-}
-
-retryBtn.addEventListener('click', ()=>{
-  index = 0; score = 0; answers = []; timeLeft = QUESTIONS.length * 60;
-  resultArea.classList.add('hidden'); quizArea.classList.remove('hidden');
-  showQuestion(index);
-  clearInterval(timerInterval); startTimer();
-});
-
-downloadBtn.addEventListener('click', ()=>{
-  const hist = JSON.parse(localStorage.getItem('mocktest_history') || '[]');
-  if(!hist.length){ alert('No saved attempt found.'); return; }
-  // CSV: date, score, total, percent
-  let csv = 'date,score,total,percent\n';
-  hist.forEach(h => {
-    csv += `${h.date},${h.score},${h.total},${h.percent}\n`;
-  });
-  const blob = new Blob([csv], {type:'text/csv'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'mocktest_results.csv';
-  document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-});
-
-// initialize
-showQuestion(0);
-startTimer();
-</script>
+    loadTestSet();
+  </script>
 </body>
 </html>
