@@ -8,4 +8,189 @@
   :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
   body{max-width:880px;margin:32px auto;padding:20px;background:#f7f8fb;border-radius:10px;}
   h1{margin:0 0 8px;}
-  .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 6px 18
+  .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 6px 18px rgba(20,20,40,0.06);}
+  .question{font-size:1.1rem;margin-bottom:12px;}
+  .choices{list-style:none;padding:0;margin:0;}
+  .choices li{margin:8px 0;}
+  button{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;}
+  .primary{background:#111;color:#fff;border:none;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .timer{font-weight:700;}
+  .hidden{display:none;}
+  footer{margin-top:16px;font-size:0.9rem;color:#555;}
+  .small{font-size:0.9rem;color:#666}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="topbar">
+      <div>
+        <h1>Mock Test</h1>
+        <div class="small">Try this demo quiz — edit questions in the JS to customize.</div>
+      </div>
+      <div class="timer" id="timer">Time: 00:00</div>
+    </div>
+
+    <div id="quizArea">
+      <div id="qnum" class="small">Question 1</div>
+      <div id="question" class="question">Loading...</div>
+      <ul id="choices" class="choices"></ul>
+
+      <div style="margin-top:12px;">
+        <button id="nextBtn" class="primary">Next</button>
+        <button id="skipBtn">Skip</button>
+      </div>
+    </div>
+
+    <div id="resultArea" class="hidden">
+      <h2>Results</h2>
+      <p id="scoreText"></p>
+      <button id="retryBtn">Retry</button>
+      <button id="downloadBtn">Download results (CSV)</button>
+    </div>
+
+    <footer>
+      <div class="small">Results are saved to your browser storage (localStorage). Use Download to export.</div>
+    </footer>
+  </div>
+
+<script>
+/* ========= EDIT QUESTIONS HERE =========
+Each item: {q: 'Question text', choices: ['a','b','c','d'], answer: 1}  (answer is zero-based index)
+You can load questions from a JSON file or API for more advanced setups.
+======================================== */
+const QUESTIONS = [
+  { q: "Which tag defines a hyperlink in HTML?", choices: ["<link>", "<a>", "<href>", "<url>"], answer: 1 },
+  { q: "What's the correct HTML element for the largest heading?", choices: ["<h6>", "<head>", "<h1>", "<heading>"], answer: 2 },
+  { q: "Which attribute adds inline CSS style to an element?", choices: ["class", "id", "style", "css"], answer: 2 },
+  { q: "Which JavaScript method writes a message to the console?", choices: ["console.log()", "print()", "echo()", "log.write()"], answer: 0 }
+];
+
+let index = 0;
+let score = 0;
+let answers = []; // {qIndex, selected, correct}
+let timeLeft = QUESTIONS.length * 60; // example: 60 seconds per question
+let timerInterval;
+
+const qnumEl = document.getElementById('qnum');
+const questionEl = document.getElementById('question');
+const choicesEl = document.getElementById('choices');
+const nextBtn = document.getElementById('nextBtn');
+const skipBtn = document.getElementById('skipBtn');
+const timerEl = document.getElementById('timer');
+const resultArea = document.getElementById('resultArea');
+const quizArea = document.getElementById('quizArea');
+const scoreText = document.getElementById('scoreText');
+const retryBtn = document.getElementById('retryBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+
+function startTimer(){
+  updateTimerDisplay();
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    if(timeLeft <= 0){
+      clearInterval(timerInterval);
+      finishQuiz();
+    }
+    updateTimerDisplay();
+  }, 1000);
+}
+
+function updateTimerDisplay(){
+  const mm = String(Math.floor(timeLeft/60)).padStart(2,'0');
+  const ss = String(timeLeft%60).padStart(2,'0');
+  timerEl.textContent = `Time: ${mm}:${ss}`;
+}
+
+function showQuestion(i){
+  const item = QUESTIONS[i];
+  qnumEl.textContent = `Question ${i+1} of ${QUESTIONS.length}`;
+  questionEl.innerHTML = item.q;
+  choicesEl.innerHTML = '';
+  item.choices.forEach((c, idx) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.innerHTML = `${String.fromCharCode(65+idx)}. ${c}`;
+    btn.dataset.index = idx;
+    btn.onclick = () => selectAnswer(idx, btn);
+    li.appendChild(btn);
+    choicesEl.appendChild(li);
+  });
+}
+
+function selectAnswer(choiceIdx, btn){
+  // highlight selected
+  Array.from(choicesEl.querySelectorAll('button')).forEach(b=>b.style.outline='none');
+  btn.style.outline = '2px solid #1a73e8';
+  btn.dataset.selected = '1';
+  // store selection but don't advance until Next clicked
+  answers[index] = { qIndex: index, selected: choiceIdx, correct: QUESTIONS[index].answer };
+}
+
+nextBtn.addEventListener('click', ()=>{
+  // if nothing selected, treat as skipped (null)
+  if(!answers[index]) answers[index] = { qIndex: index, selected: null, correct: QUESTIONS[index].answer };
+  const sel = answers[index].selected;
+  if(sel !== null && sel !== undefined && sel === QUESTIONS[index].answer){
+    score++;
+  }
+  index++;
+  if(index >= QUESTIONS.length) finishQuiz();
+  else showQuestion(index);
+});
+
+skipBtn.addEventListener('click', ()=>{
+  answers[index] = { qIndex: index, selected: null, correct: QUESTIONS[index].answer };
+  index++;
+  if(index >= QUESTIONS.length) finishQuiz();
+  else showQuestion(index);
+});
+
+function finishQuiz(){
+  clearInterval(timerInterval);
+  quizArea.classList.add('hidden');
+  resultArea.classList.remove('hidden');
+  const percent = Math.round((score / QUESTIONS.length) * 100);
+  scoreText.textContent = `Score: ${score} / ${QUESTIONS.length} (${percent}%)`;
+  // Save results to localStorage with timestamp
+  const history = JSON.parse(localStorage.getItem('mocktest_history') || '[]');
+  history.push({
+    date: new Date().toISOString(),
+    score,
+    total: QUESTIONS.length,
+    percent,
+    answers
+  });
+  localStorage.setItem('mocktest_history', JSON.stringify(history, null, 2));
+}
+
+retryBtn.addEventListener('click', ()=>{
+  index = 0; score = 0; answers = []; timeLeft = QUESTIONS.length * 60;
+  resultArea.classList.add('hidden'); quizArea.classList.remove('hidden');
+  showQuestion(index);
+  clearInterval(timerInterval); startTimer();
+});
+
+downloadBtn.addEventListener('click', ()=>{
+  const hist = JSON.parse(localStorage.getItem('mocktest_history') || '[]');
+  if(!hist.length){ alert('No saved attempt found.'); return; }
+  // CSV: date, score, total, percent
+  let csv = 'date,score,total,percent\n';
+  hist.forEach(h => {
+    csv += `${h.date},${h.score},${h.total},${h.percent}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'mocktest_results.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// initialize
+showQuestion(0);
+startTimer();
+</script>
+</body>
+</html>
